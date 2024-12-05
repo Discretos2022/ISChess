@@ -167,6 +167,38 @@ def getPawnDisplacement(board, pos: tuple, color):
 
     return disp
 
+def getKingDisplacement(board, pos: tuple, color):
+
+    x = pos[0]
+    y = pos[1]
+
+    disp = []
+
+    for i in range(-1,2):
+        for j in range(-1,2):
+            if i == 0 and j == 0:
+                continue
+            if x+i>=board.shape[0] or y+j>=board.shape[1]:
+                continue
+            elif (x >= 0 and y >= 0) and (x < board.shape[0] and y < board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
+                if x+i>=0 and y+j>=0 and x+i<=board.shape[0] and y+j<=board.shape[1]:
+                    disp.append((x + i, y + j))    
+    return disp
+
+def getKnightDisplacement(board, pos: tuple, color):
+
+    x = pos[0]
+    y = pos[1]
+
+    disp = []
+
+    for i in range(-2, 3):
+        for j in range(-2, 3):
+            if abs(i)+abs(j) == 3 and abs(abs(i)-abs(j)) == 1 and (0 <= x+i <= board.shape[0] and 0 <= y+j <= board.shape[1]):
+                if (x+i>=0 and y+j>=0 and x+i<=board.shape[0] and y+j<=board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
+                    disp.append((x + i, y + j))
+    return disp
+
 
 def siedel_bot(player_sequence, board, time_budget, **kwargs):
     color = player_sequence[1]
@@ -178,8 +210,10 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
 
     for x in range(board.shape[0]):
         for y in range(board.shape[1]):
-            if board[x, y] == "r" + color: # r
-                disp = ((x, y), getRookDisplacement(board, (x, y), color))
+            if board[x, y] == "n" + color: # r
+                disp = ((x,y), getKnightDisplacement(board, (x, y), color))
+                #disp = ((x, y), getKingDisplacement(board, (x, y), color))
+                #disp = ((x, y), getRookDisplacement(board, (x, y), color))
                 #disp = ((x, y), getPawnDisplacement(board, (x, y), color))
 
     # printBoard(nextBoard(board, (1, 0), (2, 0)))
