@@ -339,7 +339,7 @@ def getKnightDisplacement(board, pos: tuple, color):
     for i in range(-2, 3):
         for j in range(-2, 3):
             if abs(i)+abs(j) == 3 and abs(abs(i)-abs(j)) == 1 and (0 <= x+i <= board.shape[0] and 0 <= y+j <= board.shape[1]):
-                if (x+i>=0 and y+j>=0 and x+i<=board.shape[0] and y+j<=board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
+                if (x+i>=0 and y+j>=0 and x+i<board.shape[0] and y+j<board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
                     disp.append((x + i, y + j))
     return disp
 
