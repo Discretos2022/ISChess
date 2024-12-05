@@ -1,5 +1,6 @@
 
 
+
 def check_player_defeated(player_color, board):
     for x in range(board.shape[0]):
         for y in range(board.shape[1]):
@@ -68,6 +69,11 @@ def move_is_valid(player_order, move, board):
     #   Check boundary condition
     if start[0] < 0 or start[0] >= board.shape[0] or \
        start[1] < 0 or start[1] >= board.shape[1]:
+       return False
+
+    #   Check boundary condition
+    if end[0] < 0 or end[0] >= board.shape[0] or \
+       end[1] < 0 or end[1] >= board.shape[1]:
        return False
 
     #   Check piece moved
