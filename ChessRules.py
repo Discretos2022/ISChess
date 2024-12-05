@@ -1,6 +1,5 @@
 
 
-
 def check_player_defeated(player_color, board):
     for x in range(board.shape[0]):
         for y in range(board.shape[1]):
