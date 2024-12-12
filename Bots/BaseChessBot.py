@@ -139,12 +139,12 @@ def getRookDisplacement(board, pos: tuple, color):  # (x, y)
             break
 
     # >
-    for i in range(y + 1, board.shape[0]):
+    for i in range(y + 1, board.shape[1]):
         if board[x, i] == '':
             disp.append((x, i))
         if board[x, i] != '' and board[x, i][-1] == color:
             break
-        if y > 0 and board[x, i] != '' and board[x, i][-1] != color:
+        if board[x, i] != '' and board[x, i][-1] != color:
             disp.append((x, i))
             break
 
@@ -152,7 +152,6 @@ def getRookDisplacement(board, pos: tuple, color):  # (x, y)
 
 
 def getPawnDisplacement(board, pos: tuple, color):
-
     x = pos[0]
     y = pos[1]
 
@@ -160,20 +159,167 @@ def getPawnDisplacement(board, pos: tuple, color):
 
     if x < board.shape[0] and board[x + 1, y] == '':
         disp.append((x + 1, y))
-    if x < board.shape[0] and y > 0 and board[x + 1, y - 1] != color and board[x + 1, y - 1] != '':
+    if x < board.shape[0] and y > 0 and board[x + 1, y - 1] != '' and board[x + 1, y - 1][1] != color:
         disp.append((x + 1, y - 1))
-    if x < board.shape[0] and y < board.shape[1] and board[x + 1, y + 1] != color and board[x + 1, y + 1] != '':
+    if x < board.shape[0] and y < board.shape[1] - 1 and board[x + 1, y + 1] != '' and board[x + 1, y + 1][1] != color:
         disp.append((x + 1, y + 1))
 
     return disp
 
-def getKingDisplacement(board, pos: tuple, color):
+
+def getQueenDisplacement(board, pos: tuple, color):  # (x, y)
 
     x = pos[0]
     y = pos[1]
 
     disp = []
 
+    # v
+    for i in range(x + 1, board.shape[0]):
+
+        if board[i, y] != '' and board[i, y][-1] == color:
+            break
+        if board[i, y] != '' and board[i, y][-1] != color:
+            disp.append((i, y))
+            break
+        if board[i, y] == '':
+            disp.append((i, y))
+
+    # ^
+    for i in range(x - 1, -1, -1):
+
+        if board[i, y] != '' and board[i, y][-1] == color:
+            break
+        if board[i, y] != '' and board[i, y][-1] != color:
+            disp.append((i, y))
+            break
+        if board[i, y] == '':
+            disp.append((i, y))
+
+    # <
+    for i in range(y - 1, -1, -1):
+        if board[x, i] == '':
+            disp.append((x, i))
+        if board[x, i] != '' and board[x, i][-1] == color:
+            break
+        if board[x, i] != '' and board[x, i][-1] != color:
+            disp.append((x, i))
+            break
+
+    # >
+    for i in range(y + 1, board.shape[1]):
+        if board[x, i] == '':
+            disp.append((x, i))
+        if board[x, i] != '' and board[x, i][-1] == color:
+            break
+        if board[x, i] != '' and board[x, i][-1] != color:
+            disp.append((x, i))
+            break
+
+    #  / haut
+    for i in range(1, board.shape[0]):
+        if x - i >= 0 and y + i < board.shape[0]:
+            if board[x - i, y + i] == '':
+                disp.append((x - i, y + i))
+            if board[x - i, y + i] != '' and board[x - i, y + i][-1] == color:
+                break
+            if board[x - i, y + i] != '' and board[x - i, y + i][-1] != color:
+                disp.append((x - i, y + i))
+                break
+
+    #  / bas
+    for i in range(1, board.shape[0]):
+        if x + i < board.shape[0] and y - i >= 0:
+            if board[x + i, y - i] == '':
+                disp.append((x + i, y - i))
+            if board[x + i, y - i] != '' and board[x + i, y - i][-1] == color:
+                break
+            if board[x + i, y - i] != '' and board[x + i, y - i][-1] != color:
+                disp.append((x + i, y - i))
+                break
+
+    #  \ haut
+    for i in range(1, board.shape[0]):
+        if x + i < board.shape[0] and y + i < board.shape[0]:
+            if board[x + i, y + i] == '':
+                disp.append((x + i, y + i))
+            if board[x + i, y + i] != '' and board[x + i, y + i][-1] == color:
+                break
+            if board[x + i, y + i] != '' and board[x + i, y + i][-1] != color:
+                disp.append((x + i, y + i))
+                break
+
+    #  \ bas
+    for i in range(1, board.shape[0]):
+        if x - i >= 0 and y - i >= 0:
+            if board[x - i, y - i] == '':
+                disp.append((x - i, y - i))
+            if board[x - i, y - i] != '' and board[x - i, y - i][-1] == color:
+                break
+            if board[x - i, y - i] != '' and board[x - i, y - i][-1] != color:
+                disp.append((x - i, y - i))
+                break
+
+    return disp
+
+
+def getBishopDisplacement(board, pos: tuple, color):
+    x = pos[0]
+    y = pos[1]
+
+    disp = []
+
+    #  / haut
+    for i in range(1, board.shape[0]):
+        if x - i >= 0 and y + i < board.shape[0]:
+            if board[x - i, y + i] == '':
+                disp.append((x - i, y + i))
+            if board[x - i, y + i] != '' and board[x - i, y + i][-1] == color:
+                break
+            if board[x - i, y + i] != '' and board[x - i, y + i][-1] != color:
+                disp.append((x - i, y + i))
+                break
+
+    #  / bas
+    for i in range(1, board.shape[0]):
+        if x + i < board.shape[0] and y - i >= 0:
+            if board[x + i, y - i] == '':
+                disp.append((x + i, y - i))
+            if board[x + i, y - i] != '' and board[x + i, y - i][-1] == color:
+                break
+            if board[x + i, y - i] != '' and board[x + i, y - i][-1] != color:
+                disp.append((x + i, y - i))
+                break
+
+    #  \ haut
+    for i in range(1, board.shape[0]):
+        if x + i < board.shape[0] and y + i < board.shape[0]:
+            if board[x + i, y + i] == '':
+                disp.append((x + i, y + i))
+            if board[x + i, y + i] != '' and board[x + i, y + i][-1] == color:
+                break
+            if board[x + i, y + i] != '' and board[x + i, y + i][-1] != color:
+                disp.append((x + i, y + i))
+                break
+
+    #  \ bas
+    for i in range(1, board.shape[0]):
+        if x - i >= 0 and y - i >= 0:
+            if board[x - i, y - i] == '':
+                disp.append((x - i, y - i))
+            if board[x - i, y - i] != '' and board[x - i, y - i][-1] == color:
+                break
+            if board[x - i, y - i] != '' and board[x - i, y - i][-1] != color:
+                disp.append((x - i, y - i))
+                break
+
+    return disp
+
+
+def getKingDisplacement(board, pos: tuple, color):
+    x = pos[0]
+    y = pos[1]
+    disp = []
     for i in range(-1,2):
         for j in range(-1,2):
             if i == 0 and j == 0:
@@ -182,63 +328,131 @@ def getKingDisplacement(board, pos: tuple, color):
                 continue
             elif (x >= 0 and y >= 0) and (x < board.shape[0] and y < board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
                 if x+i>=0 and y+j>=0 and x+i<=board.shape[0] and y+j<=board.shape[1]:
-                    disp.append((x + i, y + j))    
+                    disp.append((x + i, y + j))
     return disp
 
-def getKnightDisplacement(board, pos: tuple, color):
 
+def getKnightDisplacement(board, pos: tuple, color):
     x = pos[0]
     y = pos[1]
-
     disp = []
-    print((x,y))
-
     for i in range(-2, 3):
         for j in range(-2, 3):
-            if abs(i)+abs(j) == 3 and abs(abs(i)-abs(j)) == 1 and (0 <= x+i < board.shape[0] or 0 <= y+j < board.shape[1]):
-                if (x+i>=0 and y+j>=0 and x+i<=board.shape[0] and y+j<=board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
+            if abs(i)+abs(j) == 3 and abs(abs(i)-abs(j)) == 1 and (0 <= x+i <= board.shape[0] and 0 <= y+j <= board.shape[1]):
+                if (x+i>=0 and y+j>=0 and x+i<board.shape[0] and y+j<board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
                     disp.append((x + i, y + j))
             
     return disp
 
 
-def siedel_bot(player_sequence, board, time_budget, **kwargs):
+def getAllDisplacement(player_sequence, board):
     color = player_sequence[1]
+
+    disp = []  # tuple  :  [ (xPion, yPion), [Displacement] , ... ]
+
+    for x in range(board.shape[0]):
+        for y in range(board.shape[1]):
+            if board[x, y] == "r" + color:  # r
+                possibleDisp = getRookDisplacement(board, (x, y), color)
+                if len(possibleDisp) != 0:
+                    disp.append(((x, y), possibleDisp))
+            if board[x, y] == "p" + color:  # r
+                possibleDisp = getPawnDisplacement(board, (x, y), color)
+                if len(possibleDisp) != 0:
+                    disp.append(((x, y), possibleDisp))
+            if board[x, y] == "q" + color:  # r
+                possibleDisp = getQueenDisplacement(board, (x, y), color)
+                if len(possibleDisp) != 0:
+                    disp.append(((x, y), possibleDisp))
+            if board[x, y] == "b" + color:  # r
+                possibleDisp = getBishopDisplacement(board, (x, y), color)
+                if len(possibleDisp) != 0:
+                    disp.append(((x, y), possibleDisp))
+            if board[x, y] == "k" + color:  # r
+                possibleDisp = getKingDisplacement(board, (x, y), color)
+                if len(possibleDisp) != 0:
+                    disp.append(((x, y), possibleDisp))
+            if board[x, y] == "n" + color:  # r
+                possibleDisp = getKnightDisplacement(board, (x, y), color)
+                if len(possibleDisp) != 0:
+                    disp.append(((x, y), possibleDisp))
+
+    return disp
+
+
+def evaluatePath1Level(board, color, startX, startY, endX, endY, pond):
+
+    if board[endX, endY] != "":
+        if board[endX, endY][-1] != color:
+            if board[endX, endY][0] == 'k':
+                pond += 1000
+            elif board[endX, endY][0] != 'p':
+                pond += 100
+            else:
+                pond += 10
+
+    return pond
+
+
+
+def siedel_bot(player_sequence, board, time_budget, **kwargs):
+
+    print(
+        "____________________________________________________________________________________________________________")
 
     printBoard(board)
     print("")
 
-    disp = ()  # tuple  :  (xPion, yPion), [Displacement]
+    disp = getAllDisplacement(player_sequence, board)
+    color = player_sequence[1]
 
-    for x in range(board.shape[0]):
-        for y in range(board.shape[1]):
-            if board[x, y] == "n" + color: # r
-                disp = ((x,y), getKnightDisplacement(board, (x, y), color))
-                #disp = ((x, y), getKingDisplacement(board, (x, y), color))
-                #disp = ((x, y), getRookDisplacement(board, (x, y), color))
-                #disp = ((x, y), getPawnDisplacement(board, (x, y), color))
+
+    dispPond = []     # (startX, startY, endX, endY, pond)
+
+    for i in disp:
+
+        x = i[0][0]
+        y = i[0][1]
+
+        for d in i[1]:
+
+            # Evaluate the ponderation of the path
+            dispPond.append((x, y, d[0], d[1], evaluatePath1Level(board, color, x, y, d[0], d[1], 0)))
+
+    for i in dispPond:
+        print(i)
+
+
+    lastDisp = dispPond[0]
+
+    for i in range(1, len(dispPond)):
+
+        if dispPond[i][4] > lastDisp[4]:
+            lastDisp = dispPond[i]
 
     # printBoard(nextBoard(board, (1, 0), (2, 0)))
     # print("")
 
     print("Possible displacement : ")
-    print(disp)
 
-    if (len(disp) == 2):
-        printBoardWithDisplacement(board, disp, color)
+    for i in disp:
+        print(i)
+        printBoardWithDisplacement(board, i, color)
 
-    # Delete dangerous displacement
-    # for i in disp:
+    return (lastDisp[0], lastDisp[1]), (lastDisp[2], lastDisp[3])
 
-    # print("Possible displacement without danger : ")
-    # print(disp)
+    ## RETOUR ALEATOIRE
+
 
     r = Random()
     n = 0
 
-    if (len(disp) == 2):
-        if len(disp[1]) != 0: n = r.randint(0, len(disp[1]) - 1)
-        if len(disp[1]) != 0: return (disp[0]), (disp[1][n][0], disp[1][n][1])
+    if len(disp) > 0:
+        n2 = r.randint(0, len(disp) - 1)
+        if len(disp[n2][1]) != 0: n = r.randint(0, len(disp[n2][1]) - 1)
+        if len(disp[n2][1]) != 0: return (disp[n2][0]), (disp[n2][1][n][0], disp[n2][1][n][1])
+        # if len(disp[0][1]) != 0: n = r.randint(0, len(disp[0][1]) - 1)
+        # if len(disp[0][1]) != 0: return (disp[0][0]), (disp[0][1][n][0], disp[0][1][n][1])
 
     time.sleep(5)
     return (0, 0), (0, 0)
@@ -248,3 +462,17 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
 register_chess_bot("SiedelSystem", siedel_bot)
 register_chess_bot("PawnMover", chess_bot)
 register_chess_bot("TowerMover", chess_bot_tower)
+
+"""
+
+0w01b2
+--,--,--,qw,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,pw
+rb,--,--,--,--,--,pb,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,kb,--,--,--,--
+
+"""
