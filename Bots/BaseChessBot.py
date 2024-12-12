@@ -344,14 +344,8 @@ def getKnightDisplacement(board, pos: tuple, color):
     return disp
 
 
-def siedel_bot(player_sequence, board, time_budget, **kwargs):
+def getAllDisplacement(player_sequence, board):
     color = player_sequence[1]
-
-    print(
-        "____________________________________________________________________________________________________________")
-
-    printBoard(board)
-    print("")
 
     disp = []  # tuple  :  [ (xPion, yPion), [Displacement] , ... ]
 
@@ -382,6 +376,59 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
                 if len(possibleDisp) != 0:
                     disp.append(((x, y), possibleDisp))
 
+    return disp
+
+
+def evaluatePath1Level(board, color, startX, startY, endX, endY, pond):
+
+    if board[endX, endY] != "":
+        if board[endX, endY][-1] != color:
+            if board[endX, endY][0] == 'k':
+                pond += 1000
+            elif board[endX, endY][0] != 'p':
+                pond += 100
+            else:
+                pond += 10
+
+    return pond
+
+
+
+def siedel_bot(player_sequence, board, time_budget, **kwargs):
+
+    print(
+        "____________________________________________________________________________________________________________")
+
+    printBoard(board)
+    print("")
+
+    disp = getAllDisplacement(player_sequence, board)
+    color = player_sequence[1]
+
+
+    dispPond = []     # (startX, startY, endX, endY, pond)
+
+    for i in disp:
+
+        x = i[0][0]
+        y = i[0][1]
+
+        for d in i[1]:
+
+            # Evaluate the ponderation of the path
+            dispPond.append((x, y, d[0], d[1], evaluatePath1Level(board, color, x, y, d[0], d[1], 0)))
+
+    for i in dispPond:
+        print(i)
+
+
+    lastDisp = dispPond[0]
+
+    for i in range(1, len(dispPond)):
+
+        if dispPond[i][4] > lastDisp[4]:
+            lastDisp = dispPond[i]
+
     # printBoard(nextBoard(board, (1, 0), (2, 0)))
     # print("")
 
@@ -391,7 +438,10 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
         print(i)
         printBoardWithDisplacement(board, i, color)
 
+    return (lastDisp[0], lastDisp[1]), (lastDisp[2], lastDisp[3])
+
     ## RETOUR ALEATOIRE
+
 
     r = Random()
     n = 0
@@ -415,13 +465,13 @@ register_chess_bot("TowerMover", chess_bot_tower)
 """
 
 0w01b2
+--,--,--,qw,--,--,--,--
 --,--,--,--,--,--,--,--
---,pw,--,--,--,--,--,--
+--,--,--,--,--,--,--,pw
+rb,--,--,--,--,--,pb,--
 --,--,--,--,--,--,--,--
---,--,--,rw,--,--,--,--
 --,--,--,--,--,--,--,--
 --,--,--,--,--,--,--,--
-pb,--,--,--,--,--,rw,--
---,--,--,--,--,--,--,--
+--,--,--,kb,--,--,--,--
 
 """
