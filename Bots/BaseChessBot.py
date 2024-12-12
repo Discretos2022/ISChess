@@ -9,6 +9,7 @@
 import time
 from random import Random
 
+import numpy as np
 from PyQt6 import QtCore
 
 #   Be careful with modules to import from the root (don't forget the Bots.)
@@ -97,6 +98,24 @@ def nextBoard(board, start, end):
     result[x][y] = p
 
     return result
+
+def nextBoardWithRotation(board, start, end):
+    result = board.copy()
+
+    x: int = start[0]
+    y: int = start[1]
+    p = result[x, y]
+    result[x, y] = ""
+
+    x: int = end[0]
+    y: int = end[1]
+    result[x][y] = p
+
+    newBoard = np.rot90(result)
+    newBoard = np.rot90(newBoard)
+    #printBoard(newBoard)
+
+    return newBoard
 
 
 def getRookDisplacement(board, pos: tuple, color):  # (x, y)
@@ -379,17 +398,53 @@ def getAllDisplacement(player_sequence, board):
     return disp
 
 
-def evaluatePath1Level(board, color, startX, startY, endX, endY, pond):
+def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, pond, baseColor, level):
+    #print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    #print(player_sequence)
+    color = player_sequence[1]
 
-    if board[endX, endY] != "":
-        if board[endX, endY][-1] != color:
-            if board[endX, endY][0] == 'k':
-                pond += 1000
-            elif board[endX, endY][0] != 'p':
-                pond += 100
-            else:
-                pond += 10
+    if baseColor == color:
+        if board[endX, endY] != "":
+            if board[endX, endY][-1] != color:
+                if board[endX, endY][0] == 'k':
+                    pond += 1000
+                elif board[endX, endY][0] == 'p':
+                    pond += 10
+                elif board[endX, endY][0] == 'q':
+                    pond += 500
+                else:
+                    pond += 100
 
+    else:
+        if board[endX, endY] != "":
+            if board[endX, endY][-1] != color:
+
+                if board[endX, endY][0] == 'k':
+                    pond -= 10000
+                elif board[endX, endY][0] == 'p':
+                    pond -= 100
+                elif board[endX, endY][0] == 'q':
+                    pond -= 5000
+                else:
+                    pond -= 1000
+
+    level -= 1
+
+    #"""
+    if level > 0:
+        newBoard = nextBoardWithRotation(board, (startX, startY), (endX, endY))
+        nextPlayerSequence = player_sequence[3:6] + player_sequence[0:3]
+        disp = getAllDisplacement(nextPlayerSequence, newBoard)
+
+        for i in disp:
+
+            x = i[0][0]
+            y = i[0][1]
+
+            for d in i[1]:
+                # Evaluate the ponderation of the path
+                pond += evaluatePath1Level(board, nextPlayerSequence, x, y, d[0], d[1], 0, baseColor, level)
+    #"""
     return pond
 
 
@@ -414,10 +469,16 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
         for d in i[1]:
 
             # Evaluate the ponderation of the path
-            dispPond.append((x, y, d[0], d[1], evaluatePath1Level(board, color, x, y, d[0], d[1], 0)))
+            dispPond.append((x, y, d[0], d[1], evaluatePath1Level(board, player_sequence, x, y, d[0], d[1], 0, color, 2)))
 
     for i in dispPond:
         print(i)
+
+    print("Possible displacement : ")
+
+    #for i in disp:
+        #print(i)
+        #printBoardWithDisplacement(board, i, color)
 
     # Prendre les déplacements avec les plus hautes pondérations
     lastDisp = []
@@ -428,31 +489,15 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
             lastDisp.clear()
             lastDisp.append(dispPond[i])
         elif dispPond[i][4] == lastDisp[0][4]:
-            lastDisp.clear()
             lastDisp.append(dispPond[i])
 
-    print("Possible displacement : ")
-
-    for i in disp:
-        print(i)
-        printBoardWithDisplacement(board, i, color)
-
     if len(lastDisp) == 1:
-        return (lastDisp[0], lastDisp[1]), (lastDisp[2], lastDisp[3])
-
-    return (lastDisp[0], lastDisp[1]), (lastDisp[2], lastDisp[3])
-
-    ## RETOUR ALEATOIRE
+        return (lastDisp[0][0], lastDisp[0][1]), (lastDisp[0][2], lastDisp[0][3])
 
     r = Random()
-    n = 0
+    n = r.randint(0, len(lastDisp) - 1)
+    return (lastDisp[n][0], lastDisp[n][1]), (lastDisp[n][2], lastDisp[n][3])
 
-    if len(disp) > 0:
-        n2 = r.randint(0, len(disp) - 1)
-        if len(disp[n2][1]) != 0: n = r.randint(0, len(disp[n2][1]) - 1)
-        if len(disp[n2][1]) != 0: return (disp[n2][0]), (disp[n2][1][n][0], disp[n2][1][n][1])
-        # if len(disp[0][1]) != 0: n = r.randint(0, len(disp[0][1]) - 1)
-        # if len(disp[0][1]) != 0: return (disp[0][0]), (disp[0][1][n][0], disp[0][1][n][1])
 
     time.sleep(5)
     return (0, 0), (0, 0)
