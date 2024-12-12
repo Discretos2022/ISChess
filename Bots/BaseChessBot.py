@@ -396,15 +396,13 @@ def evaluatePath1Level(board, color, startX, startY, endX, endY, pond):
 
 def siedel_bot(player_sequence, board, time_budget, **kwargs):
 
-    print(
-        "____________________________________________________________________________________________________________")
+    print("____________________________________________________________________________________________________________")
 
     printBoard(board)
     print("")
 
     disp = getAllDisplacement(player_sequence, board)
     color = player_sequence[1]
-
 
     dispPond = []     # (startX, startY, endX, endY, pond)
 
@@ -421,16 +419,17 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
     for i in dispPond:
         print(i)
 
-
-    lastDisp = dispPond[0]
-
+    # Prendre les déplacements avec les plus hautes pondérations
+    lastDisp = []
+    lastDisp.append(dispPond[0])
     for i in range(1, len(dispPond)):
 
-        if dispPond[i][4] > lastDisp[4]:
-            lastDisp = dispPond[i]
-
-    # printBoard(nextBoard(board, (1, 0), (2, 0)))
-    # print("")
+        if dispPond[i][4] > lastDisp[0][4]:
+            lastDisp.clear()
+            lastDisp.append(dispPond[i])
+        elif dispPond[i][4] == lastDisp[0][4]:
+            lastDisp.clear()
+            lastDisp.append(dispPond[i])
 
     print("Possible displacement : ")
 
@@ -438,10 +437,12 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
         print(i)
         printBoardWithDisplacement(board, i, color)
 
+    if len(lastDisp) == 1:
+        return (lastDisp[0], lastDisp[1]), (lastDisp[2], lastDisp[3])
+
     return (lastDisp[0], lastDisp[1]), (lastDisp[2], lastDisp[3])
 
     ## RETOUR ALEATOIRE
-
 
     r = Random()
     n = 0
