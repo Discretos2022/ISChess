@@ -99,21 +99,25 @@ def nextBoard(board, start, end):
 
     return result
 
+
 def nextBoardWithRotation(board, start, end):
     result = board.copy()
 
     x: int = start[0]
     y: int = start[1]
     p = result[x, y]
+
+    if p[0] == "p":
+        p = "q" + p[1]
+
     result[x, y] = ""
 
     x: int = end[0]
     y: int = end[1]
     result[x][y] = p
 
-    newBoard = np.rot90(result)
-    newBoard = np.rot90(newBoard)
-    #printBoard(newBoard)
+    newBoard = np.rot90(result, 2)
+    # printBoard(newBoard)
 
     return newBoard
 
@@ -176,11 +180,12 @@ def getPawnDisplacement(board, pos: tuple, color):
 
     disp = []
 
-    if x < board.shape[0] and board[x + 1, y] == '':
+    if x < (board.shape[0] - 1) and board[x + 1, y] == '':
         disp.append((x + 1, y))
-    if x < board.shape[0] and y > 0 and board[x + 1, y - 1] != '' and board[x + 1, y - 1][1] != color:
+    if x < (board.shape[0] - 1) and y > 0 and board[x + 1, y - 1] != '' and board[x + 1, y - 1][1] != color:
         disp.append((x + 1, y - 1))
-    if x < board.shape[0] and y < board.shape[1] - 1 and board[x + 1, y + 1] != '' and board[x + 1, y + 1][1] != color:
+    if x < (board.shape[0] - 1) and y < (board.shape[1] - 1) and board[x + 1, y + 1] != '' and board[x + 1, y + 1][
+        1] != color:
         disp.append((x + 1, y + 1))
 
     return disp
@@ -339,14 +344,15 @@ def getKingDisplacement(board, pos: tuple, color):
     x = pos[0]
     y = pos[1]
     disp = []
-    for i in range(-1,2):
-        for j in range(-1,2):
+    for i in range(-1, 2):
+        for j in range(-1, 2):
             if i == 0 and j == 0:
                 continue
-            if x+i>=board.shape[0] or y+j>=board.shape[1]:
+            if x + i >= board.shape[0] or y + j >= board.shape[1]:
                 continue
-            elif (x >= 0 and y >= 0) and (x < board.shape[0] and y < board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
-                if x+i>=0 and y+j>=0 and x+i<=board.shape[0] and y+j<=board.shape[1]:
+            elif (x >= 0 and y >= 0) and (x < board.shape[0] and y < board.shape[1]) and (
+                    board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
+                if x + i >= 0 and y + j >= 0 and x + i <= board.shape[0] and y + j <= board.shape[1]:
                     disp.append((x + i, y + j))
     return disp
 
@@ -357,10 +363,12 @@ def getKnightDisplacement(board, pos: tuple, color):
     disp = []
     for i in range(-2, 3):
         for j in range(-2, 3):
-            if abs(i)+abs(j) == 3 and abs(abs(i)-abs(j)) == 1 and (0 <= x+i <= board.shape[0] and 0 <= y+j <= board.shape[1]):
-                if (x+i>=0 and y+j>=0 and x+i<board.shape[0] and y+j<board.shape[1]) and (board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
+            if abs(i) + abs(j) == 3 and abs(abs(i) - abs(j)) == 1 and (
+                    0 <= x + i <= board.shape[0] and 0 <= y + j <= board.shape[1]):
+                if (x + i >= 0 and y + j >= 0 and x + i < board.shape[0] and y + j < board.shape[1]) and (
+                        board[x + i, y + j] == '' or board[x + i, y + j][1] != color):
                     disp.append((x + i, y + j))
-            
+
     return disp
 
 
@@ -399,39 +407,51 @@ def getAllDisplacement(player_sequence, board):
     return disp
 
 
-def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, pond, baseColor, level):
-    #print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    #print(player_sequence)
+piece = {"k": 1000, "q": 50, "b": 10, "n": 10, "r": 10, "p": 1}
+
+
+def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, pond, baseColor, level, maxLevel):
+    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    # print(player_sequence)
     color = player_sequence[1]
 
     if baseColor == color:
         if board[endX, endY] != "":
             if board[endX, endY][-1] != color:
                 if board[endX, endY][0] == 'k':
-                    pond += 1000
+                    if maxLevel == level:
+                        # pond += 1000 * level * 1000000
+                        return pond + 100000000
+                    else:
+                        pond += 100
                 elif board[endX, endY][0] == 'p':
-                    pond += 10
+                    pond += 1
                 elif board[endX, endY][0] == 'q':
-                    pond += 500
+                    pond += 50
                 else:
-                    pond += 100
+                    pond += 10
 
     else:
         if board[endX, endY] != "":
             if board[endX, endY][-1] != color:
 
                 if board[endX, endY][0] == 'k':
-                    pond -= 10000
+                    # pond -= 10000 * level
+                    return pond - 100000
                 elif board[endX, endY][0] == 'p':
-                    pond -= 100
+                    pond -= 10
                 elif board[endX, endY][0] == 'q':
-                    pond -= 5000
+                    pond -= 500
                 else:
-                    pond -= 1000
+                    pond -= 100
 
     level -= 1
 
-    #"""
+    # print("+1")
+
+    # printBoardWithDisplacement(board, ((startX, startY), (endX, endY)), color)
+
+    # """
     if level > 0:
         newBoard = nextBoardWithRotation(board, (startX, startY), (endX, endY))
         nextPlayerSequence = player_sequence[3:6] + player_sequence[0:3]
@@ -444,15 +464,16 @@ def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, pond,
 
             for d in i[1]:
                 # Evaluate the ponderation of the path
-                pond += evaluatePath1Level(board, nextPlayerSequence, x, y, d[0], d[1], 0, baseColor, level)
-    #"""
+                pond += evaluatePath1Level(newBoard, nextPlayerSequence, x, y, d[0], d[1], 0, baseColor, level, maxLevel)
+
+
+    # """
     return pond
 
 
-
 def siedel_bot(player_sequence, board, time_budget, **kwargs):
-
-    print("____________________________________________________________________________________________________________")
+    print(
+        "____________________________________________________________________________________________________________")
 
     printBoard(board)
     print("")
@@ -460,7 +481,7 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
     disp = getAllDisplacement(player_sequence, board)
     color = player_sequence[1]
 
-    dispPond = []     # (startX, startY, endX, endY, pond)
+    dispPond = []  # (startX, startY, endX, endY, pond)
 
     for i in disp:
 
@@ -468,18 +489,18 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
         y = i[0][1]
 
         for d in i[1]:
-
             # Evaluate the ponderation of the path
-            dispPond.append((x, y, d[0], d[1], evaluatePath1Level(board, player_sequence, x, y, d[0], d[1], 0, color, 2)))
+            dispPond.append(
+                (x, y, d[0], d[1], evaluatePath1Level(board, player_sequence, x, y, d[0], d[1], 0, color, 3, 3)))
 
     for i in dispPond:
         print(i)
 
     print("Possible displacement : ")
 
-    #for i in disp:
-        #print(i)
-        #printBoardWithDisplacement(board, i, color)
+    # for i in disp:
+    # print(i)
+    # printBoardWithDisplacement(board, i, color)
 
     # Prendre les déplacements avec les plus hautes pondérations
     lastDisp = []
@@ -498,7 +519,6 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
     r = Random()
     n = r.randint(0, len(lastDisp) - 1)
     return (lastDisp[n][0], lastDisp[n][1]), (lastDisp[n][2], lastDisp[n][3])
-
 
     time.sleep(5)
     return (0, 0), (0, 0)
@@ -520,5 +540,43 @@ rb,--,--,--,--,--,pb,--
 --,--,--,--,--,--,--,--
 --,--,--,--,--,--,--,--
 --,--,--,kb,--,--,--,--
+
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+pb,--,--,qw,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,rb,--,rb,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+
+
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,pw,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+kb,bw,kw,--,--,--,--,--
+--,--,--,--,--,--,--,--
+
+
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,bw,--,pw,kw
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,kb
+
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,kw,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,--,--
+--,--,--,--,--,--,pw,--
+--,--,--,--,--,kb,--,bb
 
 """
