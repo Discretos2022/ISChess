@@ -409,41 +409,19 @@ def getAllDisplacement(player_sequence, board):
 
 piece = {"k": 1000, "q": 50, "b": 10, "n": 10, "r": 10, "p": 1}
 
+memoization = {}
 
 def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, pond, baseColor, level, maxLevel):
-    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    # print(player_sequence)
     color = player_sequence[1]
+    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ " + level.__str__() + " " + color + " / " + baseColor)
+    # print(player_sequence)
 
-    if baseColor == color:
-        if board[endX, endY] != "":
-            if board[endX, endY][-1] != color:
-                if board[endX, endY][0] == 'k':
-                    if maxLevel == level:
-                        # pond += 1000 * level * 1000000
-                        return pond + 100000000
-                    else:
-                        pond += 100
-                elif board[endX, endY][0] == 'p':
-                    pond += 1
-                elif board[endX, endY][0] == 'q':
-                    pond += 50
-                else:
-                    pond += 10
-
-    else:
-        if board[endX, endY] != "":
-            if board[endX, endY][-1] != color:
-
-                if board[endX, endY][0] == 'k':
-                    # pond -= 10000 * level
-                    return pond - 100000
-                elif board[endX, endY][0] == 'p':
-                    pond -= 10
-                elif board[endX, endY][0] == 'q':
-                    pond -= 500
-                else:
-                    pond -= 100
+    if board[endX, endY] != "":
+        if board[endX, endY][-1] != color:
+            if baseColor == color:
+                pond += piece[board[endX, endY][0]]
+            else:
+                pond -= piece[board[endX, endY][0]]
 
     level -= 1
 
@@ -451,29 +429,49 @@ def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, pond,
 
     # printBoardWithDisplacement(board, ((startX, startY), (endX, endY)), color)
 
+    #if len(memoization) > 0 and memoization.__contains__((board, level)):
+        #print("MEMOIZATION")
+        #return pond + memoization[(board, level)]
+
     # """
     if level > 0:
         newBoard = nextBoardWithRotation(board, (startX, startY), (endX, endY))
         nextPlayerSequence = player_sequence[3:6] + player_sequence[0:3]
         disp = getAllDisplacement(nextPlayerSequence, newBoard)
 
-        for i in disp:
+        scores = []
 
-            x = i[0][0]
-            y = i[0][1]
+        if len(disp) > 0:
 
-            for d in i[1]:
-                # Evaluate the ponderation of the path
-                pond += evaluatePath1Level(newBoard, nextPlayerSequence, x, y, d[0], d[1], 0, baseColor, level, maxLevel)
+            for i in disp:
+
+                x = i[0][0]
+                y = i[0][1]
+
+                for d in i[1]:
+                    # Evaluate the ponderation of the path
+                    scores.append(evaluatePath1Level(newBoard, nextPlayerSequence, x, y, d[0], d[1], 0, baseColor, level, maxLevel))
+
+            # print(scores.__str__() + " " + level.__str__() + " " + nextPlayerSequence[1] + " / " + baseColor + " / " + color)
+
+            if baseColor == nextPlayerSequence[1]:
+                pond += max(scores)
+                #memoization[(board, level)] = max(scores)
+            else:
+                pond += min(scores)
+                #memoization[(board, level)] = min(scores)
+
 
 
     # """
+
     return pond
 
 
 def siedel_bot(player_sequence, board, time_budget, **kwargs):
-    print(
-        "____________________________________________________________________________________________________________")
+    print("____________________________________________________________________________________________________________")
+
+    t = time.process_time()
 
     printBoard(board)
     print("")
@@ -491,7 +489,7 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
         for d in i[1]:
             # Evaluate the ponderation of the path
             dispPond.append(
-                (x, y, d[0], d[1], evaluatePath1Level(board, player_sequence, x, y, d[0], d[1], 0, color, 3, 3)))
+                (x, y, d[0], d[1], evaluatePath1Level(board, player_sequence, x, y, d[0], d[1], 0, color, 4, 4)))
 
     for i in dispPond:
         print(i)
@@ -512,6 +510,8 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
             lastDisp.append(dispPond[i])
         elif dispPond[i][4] == lastDisp[0][4]:
             lastDisp.append(dispPond[i])
+
+    print("ELAPSED TIME : " + (time.process_time() - t).__str__())
 
     if len(lastDisp) == 1:
         return (lastDisp[0][0], lastDisp[0][1]), (lastDisp[0][2], lastDisp[0][3])
