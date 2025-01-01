@@ -489,7 +489,7 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
         for d in i[1]:
             # Evaluate the ponderation of the path
             dispPond.append(
-                (x, y, d[0], d[1], evaluatePath1Level(board, player_sequence, x, y, d[0], d[1], 0, color, 4, 4)))
+                (x, y, d[0], d[1], evaluatePath1Level(board, player_sequence, x, y, d[0], d[1], 0, color, 3, 3)))
 
     for i in dispPond:
         print(i)
