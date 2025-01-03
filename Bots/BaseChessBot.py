@@ -407,12 +407,6 @@ def getAllDisplacement(player_sequence, board):
     return disp
 
 
-piece = {"k": 10000, "q": 500, "b": 100, "n": 100, "r": 200, "p": 10}
-
-memoization = {}
-branches = []
-
-
 def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, s, baseColor, level, maxLevel):
     color = player_sequence[1]
     # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ " + level.__str__() + " " + color + " / " + baseColor)
@@ -497,7 +491,6 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
 
     score = 0
 
-
     if board[endX, endY] != "":
         if board[endX, endY][-1] != color:
             if baseColor == color:
@@ -519,15 +512,6 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
                         return score * 1000
                     else:
                         return score
-
-    """
-    s = ""
-    for i in range(0, (maxLevel - level) * 15):
-        s += " "
-    s += level.__str__() + "  (" + score.__str__() + "+" + scoreBefore.__str__() + "=" + (score + scoreBefore).__str__() + ")"
-    print(s)
-    """
-
 
     if level > 1:
         newBoard = nextBoardWithRotation(board, (startX, startY), (endX, endY))
@@ -583,8 +567,6 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
                                               maxLevel, score + scoreBefore)
                         scores.append(val)
 
-            #if level == 2:
-                #print(scores)
             if len(scores) > 0:
                 if baseColor != color:
                     if MEMOIZATION: memoization[(memBoard, level)] = max(scores)
@@ -595,10 +577,19 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
 
     return score + scoreBefore
 
-
+# CONSTANT
 LEVEL: int = 4
 MEMOIZATION: bool = True
 ALPHABETA: bool = True
+
+# Score de chaque pièce
+piece = {"k": 10000, "q": 500, "b": 100, "n": 100, "r": 200, "p": 10}
+
+# Mémoire pour la memoization
+memoization = {}
+
+# Espèce de compteur pour le nombre de branche
+branches = []
 
 
 def ISChess_bot(player_sequence, board, time_budget, **kwargs):
@@ -623,19 +614,13 @@ def ISChess_bot(player_sequence, board, time_budget, **kwargs):
         y = i[0][1]
 
         for d in i[1]:
-            # Evaluate the ponderation of the path
-            # print("------------------------------------------------------------------------------------------------" + x.__str__(), y, d[0], d[1])
+            # Evaluate the score of the path
             dispPond.append((x, y, d[0], d[1], evaluatePath2_0(board, player_sequence, x, y, d[0], d[1], color, LEVEL, LEVEL, 0)))
-            #print()
-
-    for i in dispPond:
-        print(i)
 
     print("Possible displacement : ")
 
-    # for i in disp:
-    # print(i)
-    # printBoardWithDisplacement(board, i, color)
+    for i in dispPond:
+        print(i)
 
     # Prendre les déplacements avec les plus hautes pondérations
     lastDisp = []
@@ -648,6 +633,7 @@ def ISChess_bot(player_sequence, board, time_budget, **kwargs):
         elif dispPond[i][4] == lastDisp[0][4]:
             lastDisp.append(dispPond[i])
 
+    # Printer des statistiques
     print()
     print("ELAPSED TIME : " + (time.process_time() - t).__str__())
     print("BRANCH       : " + (len(branches)).__str__())
@@ -659,10 +645,12 @@ def ISChess_bot(player_sequence, board, time_budget, **kwargs):
     if len(lastDisp) == 1:
         return (lastDisp[0][0], lastDisp[0][1]), (lastDisp[0][2], lastDisp[0][3])
 
+    # Prendre aléatoirement un des meilleurs déplacements si il y en a plusieurs
     r = Random()
     n = r.randint(0, len(lastDisp) - 1)
     return (lastDisp[n][0], lastDisp[n][1]), (lastDisp[n][2], lastDisp[n][3])
 
+    # Si il n'y a pas de bon coup (n'arrive normalement jamais)
     time.sleep(5)
     return (0, 0), (0, 0)
 
