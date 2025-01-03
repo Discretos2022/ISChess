@@ -483,7 +483,7 @@ def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, s, ba
     return pond
 
 
-def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColor, level, maxLevel, scoreBefore):
+def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColor, level, maxLevel, scoreBefore, opt = 0):
     branches.append("1")
 
     color = player_sequence[1]
@@ -534,6 +534,14 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
         nextPlayerSequence = player_sequence[3:6] + player_sequence[0:3]
         disp = getAllDisplacement(nextPlayerSequence, newBoard)
 
+        # """ memoization
+        if MEMOIZATION:
+            memBoard = newBoard.data.tobytes()
+
+            if len(memoization) > 0 and memoization.__contains__((memBoard, level)):
+                return score + memoization[(memBoard, level)]
+        # """
+
         scores = []
 
         if len(disp) > 0:
@@ -543,45 +551,46 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
                 for d in i[1]:
                     # Evaluate the score of the path       if min < max -> END
 
-                    """
-                    if MIN:
-
+                    if ALPHABETA:
                         val = 0
-                        if len(scores) > 0:
-                            val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, max(scores))
+                        if MIN:
 
-                            if min(scores) < alpha:
-                                return score + min(scores)
-                        else:
-                            val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, 0)
+                            val = 0
+                            if len(scores) > 0:
+                                val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore, max(scores))
 
+                                if min(scores) < opt:
+                                    return score + min(scores)
+                            else:
+                                val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore)
+
+                            scores.append(val)
+
+                        if MAX:
+
+                            val = 0
+                            if len(scores) > 0:
+                                val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore, min(scores))
+
+                                if max(scores) > opt:
+                                    return score + max(scores)
+                            else:
+                                val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore)
+
+                            scores.append(val)
+                    else:
+                        val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level - 1,
+                                              maxLevel, score + scoreBefore)
                         scores.append(val)
-
-                    if MAX:
-
-                        val = 0
-                        if len(scores) > 0:
-                            val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, min(scores))
-
-                            if max(scores) > alpha:
-                                return score + max(scores)
-                        else:
-                            val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, 0)
-
-                        scores.append(val)
-                        
-                    """
-
-                    val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level - 1,
-                                          maxLevel, score + scoreBefore)
-                    scores.append(val)
 
             #if level == 2:
                 #print(scores)
             if len(scores) > 0:
                 if baseColor != color:
+                    if MEMOIZATION: memoization[(memBoard, level)] = max(scores)
                     return max(scores)
                 else:
+                    if MEMOIZATION: memoization[(memBoard, level)] = min(scores)
                     return min(scores)
 
     return score + scoreBefore
@@ -589,9 +598,10 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
 
 LEVEL: int = 4
 MEMOIZATION: bool = True
+ALPHABETA: bool = True
 
 
-def siedel_bot(player_sequence, board, time_budget, **kwargs):
+def ISChess_bot(player_sequence, board, time_budget, **kwargs):
     print("__________________________________________________________________________________________________________")
 
     t = time.process_time()
@@ -658,7 +668,7 @@ def siedel_bot(player_sequence, board, time_budget, **kwargs):
 
 
 #   Example how to register the function
-register_chess_bot("SiedelSystem", siedel_bot)
+register_chess_bot("SiedelSystem", ISChess_bot)
 register_chess_bot("PawnMover", chess_bot)
 register_chess_bot("TowerMover", chess_bot_tower)
 
