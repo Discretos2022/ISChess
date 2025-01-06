@@ -16,41 +16,7 @@ from PyQt6 import QtCore
 from Bots.ChessBotList import register_chess_bot
 
 
-#   Simply move the pawns forward and tries to capture as soon as possible
-def chess_bot(player_sequence, board, time_budget, **kwargs):
-    color = player_sequence[1]
-    for x in range(board.shape[0] - 1):
-        for y in range(board.shape[1]):
-            if board[x, y] != "p" + color:
-                continue
-            if y > 0 and board[x + 1, y - 1] != '' and board[x + 1, y - 1][-1] != color:
-                return (x, y), (x + 1, y - 1)
-            if y < board.shape[1] - 1 and board[x + 1, y + 1] != '' and board[x + 1, y + 1][1] != color:
-                return (x, y), (x + 1, y + 1)
-            elif board[x + 1, y] == '':
-                return (x, y), (x + 1, y)
-
-    time.sleep(1)
-    return (0, 0), (0, 0)
-
-
-def chess_bot_tower(player_sequence, board, time_budget, **kwargs):
-    color = player_sequence[1]
-    for x in range(board.shape[0] - 1):
-        for y in range(board.shape[1]):
-            if board[x, y] != "r" + color:
-                continue
-            if y > 0 and board[x + 1, y] != '' and board[x + 1, y][-1] != color:
-                return (x, y), (x + 1, y)
-            if y < board.shape[1] - 1 and board[x + 1, y] != '' and board[x + 1, y][1] != color:
-                return (x, y), (x + 1, y)
-            elif board[x + 1, y] == '':
-                return (x, y), (x + 1, y)
-
-    time.sleep(1)
-    return (0, 0), (0, 0)
-
-
+# Print le plateau
 def printBoard(board):
     print("—————————————————————————————————————————")
     for i in range(board.shape[0]):
@@ -64,7 +30,7 @@ def printBoard(board):
         print(line)
         print("—————————————————————————————————————————")
 
-
+# Print le plateau avec une modélisation d'un déplacement
 def printBoardWithDisplacement(board, disp: tuple, color):
     print("—————————————————————————————————————————")
     for i in range(board.shape[0]):
@@ -84,7 +50,7 @@ def printBoardWithDisplacement(board, disp: tuple, color):
         print(line)
         print("—————————————————————————————————————————")
 
-
+# Retourne le futur plateau
 def nextBoard(board, start, end):
     result = board.copy()
 
@@ -99,7 +65,7 @@ def nextBoard(board, start, end):
 
     return result
 
-
+# Retourne le futur plateau avec la rotation
 def nextBoardWithRotation(board, start, end):
     result = board.copy()
 
@@ -122,6 +88,7 @@ def nextBoardWithRotation(board, start, end):
     return newBoard
 
 
+######### DEPLACEMENT DES PIECES #########
 def getRookDisplacement(board, pos: tuple, color):  # (x, y)
 
     x = pos[0]
@@ -407,76 +374,7 @@ def getAllDisplacement(player_sequence, board):
     return disp
 
 
-def evaluatePath1Level(board, player_sequence, startX, startY, endX, endY, s, baseColor, level, maxLevel):
-    color = player_sequence[1]
-    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ " + level.__str__() + " " + color + " / " + baseColor)
-    # print(player_sequence)
-
-    branches.append("1")
-
-    pond = 0
-
-    if board[endX, endY] != "":
-        if board[endX, endY][-1] != color:
-            if baseColor == color:
-                pond += piece[board[endX, endY][0]]
-
-                # Stop si le roi adverse peut être éliminé
-                if board[endX, endY][0] == "k":
-                    return pond
-
-            else:
-                pond -= piece[board[endX, endY][0]]
-
-                # Stop si notre roi peut être éliminé
-                if board[endX, endY][0] == "k":
-                    return pond
-
-    level -= 1
-
-    if level > 0:
-        newBoard = nextBoardWithRotation(board, (startX, startY), (endX, endY))
-        nextPlayerSequence = player_sequence[3:6] + player_sequence[0:3]
-        disp = getAllDisplacement(nextPlayerSequence, newBoard)
-
-        scores = []
-
-        # """ memoization
-        if MEMOIZATION:
-            memBoard = newBoard.data.tobytes()
-
-            if len(memoization) > 0 and memoization.__contains__((memBoard, level)):
-                pond += memoization[(memBoard, level)]  # memDisp
-                return pond
-        # """
-
-        if len(disp) > 0:
-
-            for i in disp:
-
-                x = i[0][0]
-                y = i[0][1]
-
-                for d in i[1]:
-                    # Evaluate the score of the path
-                    scores.append(
-                        evaluatePath1Level(newBoard, nextPlayerSequence, x, y, d[0], d[1], pond + s, baseColor, level,
-                                           maxLevel))
-
-            # print(scores.__str__() + " " + level.__str__() + " " + nextPlayerSequence[1] + " / " + baseColor + " / " + color)
-
-            if baseColor == nextPlayerSequence[1]:
-                pond += max(scores)
-                if MEMOIZATION:
-                    memoization[(memBoard, level)] = max(scores)
-            else:
-                pond -= max(scores)
-                if MEMOIZATION:
-                    memoization[(memBoard, level)] = min(scores)
-
-    return pond
-
-
+# Evalue récursivement et retourne le score final du déplacement
 def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColor, level, maxLevel, scoreBefore, opt = 0):
     branches.append("1")
 
@@ -591,7 +489,7 @@ memoization = {}
 # Espèce de compteur pour le nombre de branche
 branches = []
 
-
+# Fonction d'entrée du bot
 def ISChess_bot(player_sequence, board, time_budget, **kwargs):
     print("__________________________________________________________________________________________________________")
 
@@ -656,67 +554,4 @@ def ISChess_bot(player_sequence, board, time_budget, **kwargs):
 
 
 #   Example how to register the function
-register_chess_bot("SiedelSystem", ISChess_bot)
-register_chess_bot("PawnMover", chess_bot)
-register_chess_bot("TowerMover", chess_bot_tower)
-
-"""
-
-0w01b2
---,--,--,qw,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,pw
-rb,--,--,--,--,--,pb,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,kb,--,--,--,--
-
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
-pb,--,--,qw,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,rb,--,rb,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
-
-
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,pw,--,--,--,--,--,--
---,--,--,--,--,--,--,--
-kb,bw,kw,--,--,--,--,--
---,--,--,--,--,--,--,--
-
-
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,bw,--,pw,kw
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,kb
-
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,kw,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,pw,--
---,--,--,--,--,kb,--,bb
-
---,--,--,kw,--,--,--,rb
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,--,--,--,--,--,--
---,--,kb,--,--,--,qw,--
---,--,--,--,--,--,--,--
-
-"""
+register_chess_bot("SV", ISChess_bot)
