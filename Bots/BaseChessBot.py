@@ -441,8 +441,9 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
                             if len(scores) > 0:
                                 val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore, max(scores))
 
-                                if min(scores) < opt:
-                                    return score + min(scores)
+                                minVal = min(scores)
+                                if minVal < opt:
+                                    return score + minVal
                             else:
                                 val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore)
 
@@ -454,8 +455,9 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
                             if len(scores) > 0:
                                 val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore, min(scores))
 
-                                if max(scores) > opt:
-                                    return score + max(scores)
+                                maxVal = max(scores)
+                                if maxVal > opt:
+                                    return score + maxVal
                             else:
                                 val = evaluatePath2_0(newBoard, nextPlayerSequence, x, y, d[0], d[1], baseColor, level-1, maxLevel, score + scoreBefore)
 
@@ -467,11 +469,13 @@ def evaluatePath2_0(board, player_sequence, startX, startY, endX, endY, baseColo
 
             if len(scores) > 0:
                 if baseColor != color:
-                    if MEMOIZATION: memoization[(memBoard, level)] = max(scores)
-                    return max(scores)
+                    maxVal = max(scores)
+                    if MEMOIZATION: memoization[(memBoard, level)] = maxVal
+                    return maxVal
                 else:
-                    if MEMOIZATION: memoization[(memBoard, level)] = min(scores)
-                    return min(scores)
+                    minVal = min(scores)
+                    if MEMOIZATION: memoization[(memBoard, level)] = minVal
+                    return minVal
 
     return score + scoreBefore
 
@@ -514,6 +518,13 @@ def ISChess_bot(player_sequence, board, time_budget, **kwargs):
         for d in i[1]:
             # Evaluate the score of the path
             dispPond.append((x, y, d[0], d[1], evaluatePath2_0(board, player_sequence, x, y, d[0], d[1], color, LEVEL, LEVEL, 0)))
+
+            if time.process_time() - t > 1.8:
+                break
+
+        if time.process_time() - t > 1.8:
+            break
+
 
     print("Possible displacement : ")
 
