@@ -350,23 +350,23 @@ def getAllDisplacement(player_sequence, board):
                 possibleDisp = getRookDisplacement(board, (x, y), color)
                 if len(possibleDisp) != 0:
                     disp.append(((x, y), possibleDisp))
-            if board[x, y] == "p" + color:  # r
+            if board[x, y] == "p" + color:  # p
                 possibleDisp = getPawnDisplacement(board, (x, y), color)
                 if len(possibleDisp) != 0:
                     disp.append(((x, y), possibleDisp))
-            if board[x, y] == "q" + color:  # r
+            if board[x, y] == "q" + color:  # q
                 possibleDisp = getQueenDisplacement(board, (x, y), color)
                 if len(possibleDisp) != 0:
                     disp.append(((x, y), possibleDisp))
-            if board[x, y] == "b" + color:  # r
+            if board[x, y] == "b" + color:  # b
                 possibleDisp = getBishopDisplacement(board, (x, y), color)
                 if len(possibleDisp) != 0:
                     disp.append(((x, y), possibleDisp))
-            if board[x, y] == "k" + color:  # r
+            if board[x, y] == "k" + color:  # k
                 possibleDisp = getKingDisplacement(board, (x, y), color)
                 if len(possibleDisp) != 0:
                     disp.append(((x, y), possibleDisp))
-            if board[x, y] == "n" + color:  # r
+            if board[x, y] == "n" + color:  # n
                 possibleDisp = getKnightDisplacement(board, (x, y), color)
                 if len(possibleDisp) != 0:
                     disp.append(((x, y), possibleDisp))
